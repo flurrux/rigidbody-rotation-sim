@@ -1,0 +1,18 @@
+{
+  "name": "@flurrux/rigidbody-rotation-demo",
+  "version": "1.0.0",
+  "description": "rigidbody-rotation is best rotation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "parcel build index.html",
+    "prepublish": "npm run build"
+  },
+  "author": "Christian Hoffmann <christianhoffmann@outlook.com>",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "cssnano": "^4.1.10",
+    "typescript": "^3.6.4"
+  }
+}
