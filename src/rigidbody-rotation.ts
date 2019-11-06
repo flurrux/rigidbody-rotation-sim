@@ -9,10 +9,10 @@ interface Particle {
 }
 
 export const calculateCuboidInertiaTensor = (halfWidth: number, halfHeight: number, halfDepth: number) : Vector3 => {
-    const xInt = 2 * (halfWidth**3) / 3;
-    const yInt = 2 * (halfHeight**3) / 3;
-    const zInt = 2 * (halfDepth**3) / 3;
-    return [yInt + zInt, zInt + xInt, xInt + yInt];
+    const xInt = (halfWidth**3) * halfHeight * halfDepth;
+    const yInt = (halfHeight**3) * halfDepth * halfWidth;
+    const zInt = (halfDepth**3) * halfWidth * halfHeight;
+    return Vec3.multiply([yInt + zInt, zInt + xInt, xInt + yInt], 8 / 3);
 };
 
 const addInertiaTensors = (a: Matrix3, b: Matrix3): Matrix3 => a.map((val1, index) => val1 + b[index]) as Matrix3;
@@ -38,19 +38,7 @@ interface RigidbodyRotationState {
     orientation: Matrix3,
     angularVelocity: Vector3
 };
-// export const simulate = (state: RigidbodyRotationState, inertiaTensor: Matrix3, deltaTime: number) : RigidbodyRotationState => {
-//     //inertia-tensor and angular-velocity are relative to the orientation
-//     const { angularVelocity, orientation } = state;
-//     const globalInertiaTensor = multiplyMatrix(orientation, inertiaTensor);
-//     const angularMomentumBefore = multiplyVector(globalInertiaTensor, angularVelocity);
-//     const nextOrientation = multiplyMatrix(rotationMatrix(Vec3.multiply(angularVelocity, deltaTime)), orientation);
-//     const inertiaTensorInv = matrixInverse(multiplyMatrix(nextOrientation, inertiaTensor));
-//     const nextAngularVelocity = multiplyVector(inertiaTensorInv, angularMomentumBefore);
-//     return {
-//         orientation: nextOrientation,
-//         angularVelocity: nextAngularVelocity
-//     };
-// };
+
 export const simulate = (state: RigidbodyRotationState, inertiaTensor: Vector3, deltaTime: number) : RigidbodyRotationState => {
     //inertia-tensor and angular-velocity are relative to the orientation
     const { angularVelocity, orientation } = state;
