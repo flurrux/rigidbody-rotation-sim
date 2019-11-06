@@ -2,23 +2,33 @@ import { Matrix3, Vector3, Vector2 } from './types';
 import { Transform, inverseTransformPoint, inverseTransformTransform, transformTransform } from './transform';
 import { multiplyMatrix, rotation, identity } from './mat3x3';
 import * as Vec3 from './vec3';
-import { calculateCuboidInertiaTensor, simulate } from './rigidbody-rotation';
-import { createCamSettingsFromCanvas, CameraSettings, viewportToCanvas, projectPoint, pathPolygon } from './render';
+import { simulate } from './rigidbody-rotation';
+import { createCamSettingsFromCanvas, CameraSettings, viewportToCanvas, projectPoint } from './render';
 import { createArray, randomUnitVector, randomRange } from './util';
-import { FaceObject, createCuboidFaces, projectFaces } from './cuboid-rendering';
-
+import { pathPolygon, FaceObject, projectFaces } from './face-rendering';
+import { createCenteredTHandle, createTHandleFaces, calculateTHandleInertiaTensor } from './t-handle';
+import { createCuboidFaces, calculateCuboidInertiaTensor } from './cuboid';
 
 const canvas = document.body.querySelector("canvas");
 Object.assign(canvas, { width: window.innerWidth, height: window.innerHeight });
 const ctx = canvas.getContext("2d");
 
-window.onresize = () => {
+const onresize = () => {
     Object.assign(canvas, { width: window.innerWidth, height: window.innerHeight });
-    camera.settings = createCamSettingsFromCanvas(-5, 0.003, canvas);
+
+    const targetPlaneSize = 5;
+    const defaultOriginZ = -1700;
+    const planeScale = targetPlaneSize / Math.min(canvas.width, canvas.height);
+    camera.settings = {
+        originZ: defaultOriginZ * planeScale,
+        planeWidthHalf: canvas.width * planeScale / 2,
+        planeHeightHalf: canvas.height * planeScale / 2
+    };
 };
+window.onresize = onresize;
 
 
-const camOrbitRadius = 12
+const camOrbitRadius = 0.04;//12;
 const camera : {transform: Transform, settings: CameraSettings} = {
     transform: {
         orientation: [1, 0, 0, 0, 1, 0, 0, 0, 1],
@@ -27,8 +37,11 @@ const camera : {transform: Transform, settings: CameraSettings} = {
     settings: createCamSettingsFromCanvas(-5, 0.003, canvas)
 };
 
+
 const cuboidSize: Vector3 = [randomRange(0.1, 1), randomRange(0.5, 2), randomRange(0.1, 1.2)];
-const cuboidObject: {transform: Transform, faces: FaceObject[]} = {
+//const cuboidSize: Vector3 = [0.8, 2, 0.1];
+//const tHandleSize = createCenteredTHandle(0.9, 0.58, 0.19);
+const renderObject: {transform: Transform, faces: FaceObject[]} = {
     transform: {
         orientation: [1, 0, 0, 0, 1, 0, 0, 0, 1],
         position: [0, 0, 0],
@@ -77,8 +90,10 @@ const stars : { strength: number, position: Vector3 }[] = createArray(1000).map(
 
 //rotation simulation ###
 let rigidbodyState: { angularVelocity: Vector3, orientation: Matrix3 };
+let startSimulation: Function;
 {
     const inertiaTensor = calculateCuboidInertiaTensor(...Vec3.multiply(cuboidSize, 0.5));
+    //const inertiaTensor = calculateTHandleInertiaTensor(tHandleSize);
     rigidbodyState = {
         angularVelocity: Vec3.multiply(randomUnitVector(), 4),
         orientation: identity
@@ -98,7 +113,7 @@ let rigidbodyState: { angularVelocity: Vector3, orientation: Matrix3 };
 
         render();
     };
-    requestAnimationFrame(loop);
+    startSimulation = loop;
 }
 
 
@@ -119,19 +134,19 @@ const renderStars = (toCanvas: Function, project: Function) => {
 };
 
 const renderCuboid = (toCanvas: (p: Vector2) => Vector2) => {
-    const localObjTransform = inverseTransformTransform(camera.transform)(cuboidObject.transform);
+    const localObjTransform = inverseTransformTransform(camera.transform)(renderObject.transform);
     const transformToLocalObj = transformTransform(localObjTransform);
-    const localFaces = cuboidObject.faces.map(face => {
+    const localFaces = renderObject.faces.map(face => {
         return { ...face, transform: transformToLocalObj(face.transform) }
     });
     const renderableFaces = projectFaces(localFaces, camera.settings).map(face => face.map(toCanvas));
 
     for (const face of renderableFaces){
+        
         pathPolygon(ctx, face);
         ctx.fillStyle = backgroundColor;
         ctx.fill();
-    }
-    for (const face of renderableFaces){
+
         pathPolygon(ctx, face);
         Object.assign(ctx, {
             lineWidth: 2,
@@ -158,9 +173,15 @@ const render = () => {
 
     renderStars(toCanvas, project);
 
-    cuboidObject.transform.orientation = rigidbodyState.orientation;
+    renderObject.transform.orientation = rigidbodyState.orientation;
     renderCuboid(toCanvas);
     
 
     ctx.restore();
 };
+
+const main = () => {
+    onresize();
+    requestAnimationFrame(() => startSimulation());
+};
+main();

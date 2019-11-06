@@ -26,11 +26,3 @@ export const projectPoint = (cam: CameraSettings) => {
 export const projectPoints = (cam: CameraSettings) => ((points: Vector3[]) => points.map(projectPoint(cam)));
 export const viewportToCanvas = (canvas: any) => ((point: Vector2) : Vector2 => ([point[0] * canvas.width / 2, point[1] * canvas.height / 2]));
 
-
-export const pathPolygon = (ctx: CanvasRenderingContext2D, polygon: [number, number][]) => {
-    ctx.beginPath();
-    ctx.moveTo(...polygon[0]);
-    polygon.slice(1).map(point => ctx.lineTo(...point));
-    ctx.closePath();
-};
-

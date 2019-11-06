@@ -1,19 +1,24 @@
 
 import { Matrix3, Vector3 } from './types';
-import { rotation as rotationMatrix, multiplyMatrix, multiplyVector, inverse as matrixInverse } from './mat3x3';
+import { rotation as rotationMatrix, multiplyMatrix } from './mat3x3';
 import * as Vec3 from './vec3';
+
+
+
+export const calculateOffsetCuboidSymmetricInertia = (startCorner: Vector3, size: Vector3) : Vector3 => {
+    const xInt = ((startCorner[0] + size[0])**3 - startCorner[0]**3) * (size[1] * size[2]);
+    const yInt = ((startCorner[1] + size[1])**3 - startCorner[1]**3) * (size[2] * size[0]);
+    const zInt = ((startCorner[2] + size[2])**3 - startCorner[2]**3) * (size[0] * size[1]);
+    return Vec3.multiply([yInt + zInt, zInt + xInt, xInt + yInt], 1 / 3);
+};
+
+
+
 
 interface Particle {
     position: Vector3,
     mass: number
 }
-
-export const calculateCuboidInertiaTensor = (halfWidth: number, halfHeight: number, halfDepth: number) : Vector3 => {
-    const xInt = (halfWidth**3) * halfHeight * halfDepth;
-    const yInt = (halfHeight**3) * halfDepth * halfWidth;
-    const zInt = (halfDepth**3) * halfWidth * halfHeight;
-    return Vec3.multiply([yInt + zInt, zInt + xInt, xInt + yInt], 8 / 3);
-};
 
 const addInertiaTensors = (a: Matrix3, b: Matrix3): Matrix3 => a.map((val1, index) => val1 + b[index]) as Matrix3;
 const scaleInetiaTensor = (tensor: Matrix3, scale: number) => tensor.map(val => val * scale);
