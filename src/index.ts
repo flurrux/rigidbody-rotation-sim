@@ -6,7 +6,7 @@ import { calculateTHandleInertiaTensor, createCenteredTHandle, createTHandleFace
 import { getRayFacesIntersection, handlePointerDown, handlePointerDrag, handlePointerUp, Ray, screenPointToWorldRay } from './t-handle-interaction';
 import { inverseTransformPoint, inverseTransformTransform, Transform, transformPoint, transformTransform } from './transform';
 import { Matrix3, Vector2, Vector3 } from './types';
-import { createArray } from './util';
+import { createArray, randomUnitVector } from './util';
 import * as Vec2 from './vec2';
 import * as Vec3 from './vec3';
 
@@ -28,6 +28,7 @@ const updateCanvasSize = () => {
 };
 updateCanvasSize();
 
+const isTouchDevice = () => "ontouchstart" in document.documentElement;
 
 const mapRange = (range1: [number, number], range2: [number, number], value: number): number => {
 	const relVal = value - range1[0];
@@ -91,7 +92,7 @@ const stars : { strength: number, position: Vector3 }[] = createArray(1000).map(
 let rigidbodyState: { angularVelocity: Vector3, orientation: Matrix3 };
 const inertiaTensor = calculateTHandleInertiaTensor(tHandleSize);
 rigidbodyState = {
-	angularVelocity: [0, 0, 0],// Vec3.multiply(randomUnitVector(), 4),
+	angularVelocity: Vec3.multiply(randomUnitVector(), 1),
 	orientation: [
 		0.879614796247949, 0.1049866657888861, -0.4639564744975621, 
 		0.010446319108088221, 0.9708419604927488, 0.23949271839392078, 
@@ -110,15 +111,22 @@ const simulateRigidbody = (deltaTime: number) => {
 
 //interaction test ###
 let intersectionTransform: Transform = null;
-let updateInteraction;
+let updateInteraction: ((deltaTime: number) => void) = null; 
+let updateIntersection: (() => void) = null;
 {
+	let curPointer: Vector2 = null;
 	let curRay: Ray = null;
 	let curIntersection = null;
 	let curState = null;
 	let isDragging = false;
 	
-	const updateIntersection = (e) => {
-		curRay = screenPointToWorldRay([e.offsetX, e.offsetY], canvas, camera.transform, camera.settings);
+	const updateIntersectionByEvent = (e) => {
+		curPointer = [e.offsetX, e.offsetY];
+		updateIntersection();
+	};
+	updateIntersection = () => {
+		if (!curPointer) return;
+		curRay = screenPointToWorldRay(curPointer, canvas, camera.transform, camera.settings);
 		curIntersection = getRayFacesIntersection(renderObject.transform, renderObject.faces, curRay);
 		if (curIntersection) {
 			intersectionTransform = transformTransform(renderObject.transform)(curIntersection.intersectionTransform);
@@ -139,10 +147,10 @@ let updateInteraction;
 	};
 
 	canvas.addEventListener("pointermove", e => {
-		updateIntersection(e);
+		updateIntersectionByEvent(e);
 	});
 	canvas.addEventListener("pointerdown", e => {
-		updateIntersection(e);
+		updateIntersectionByEvent(e);
 		if (!curIntersection) return;
 		rigidbodyState.angularVelocity = [0, 0, 0];
 		isDragging = true;
@@ -150,7 +158,8 @@ let updateInteraction;
 	});
 	document.addEventListener("pointerup", e => {
 		if (!isDragging) return;
-		if ("ontouchstart" in document.documentElement){
+		if (isTouchDevice()){
+			curPointer = null;
 			intersectionTransform = null;
 		}
 		isDragging = false;
@@ -262,6 +271,7 @@ const startLoop = () => {
 		const curTime = window.performance.now();
 		const deltaTime = (curTime - prevTime) / 1000;
 		prevTime = curTime;
+		updateIntersection();
 		updateInteraction(deltaTime);
 		simulateRigidbody(deltaTime);
 		render();
