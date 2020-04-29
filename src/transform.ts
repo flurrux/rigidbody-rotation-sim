@@ -7,11 +7,22 @@ export interface Transform {
     orientation: Matrix3
 };
 export const transformPoint = (transform: Transform) => {
-    return ((point: Vector3) : Vector3 => Vec3.add(transform.position, multiplyVector(transform.orientation, point)));
+    return (point: Vector3) : Vector3 => {
+		return Vec3.add(transform.position, multiplyVector(transform.orientation, point));
+	}
+};
+export const transformDirection = (transform: Transform) => {
+	return (direction: Vector3): Vector3 => {
+		return multiplyVector(transform.orientation, direction);
+	};
 };
 export const inverseTransformPoint = (transform: Transform) => {
     const invMat = inverseMatrix(transform.orientation);
     return (point: Vector3) : Vector3 => multiplyVector(invMat, Vec3.subtract(point, transform.position));
+};
+export const inverseTransformDirection = (transform: Transform) => {
+	const invMat = inverseMatrix(transform.orientation);
+	return (direction: Vector3): Vector3 => multiplyVector(invMat, direction);
 };
 export const transformTransform = (transform: Transform) => {
     return (toTransform: Transform) => {

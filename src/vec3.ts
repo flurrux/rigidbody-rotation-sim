@@ -1,3 +1,5 @@
+import { Vector3 } from "./types";
+
 type Vec3 = [number, number, number];
 
 export const add = (a: Vec3, b: Vec3): Vec3 => [
@@ -23,3 +25,6 @@ export const cross = (a: Vec3, b: Vec3): Vec3 => [
     a[2] * b[0] - b[2] * a[0],
     a[0] * b[1] - b[0] * a[1]
 ];
+export const project = (normal: Vector3, point: Vector3): Vector3 => {
+	return multiply(normal, dot(normal, point));
+};

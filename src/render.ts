@@ -7,11 +7,11 @@ export interface CameraSettings {
     planeWidthHalf: number, 
     planeHeightHalf: number
 }
-export const createCamSettingsFromCanvas = (originZ: number, planeScale: number, canvas: any) => {
+export const createCamSettingsFromCanvas = (originZ: number, planeScale: number, canvas: HTMLCanvasElement) => {
     return {
         originZ,
-        planeWidthHalf: canvas.width * planeScale / 2,
-        planeHeightHalf: canvas.height * planeScale / 2
+        planeWidthHalf: canvas.offsetWidth * planeScale / 2,
+        planeHeightHalf: canvas.offsetHeight * planeScale / 2
     };
 };
 export const projectPoint = (cam: CameraSettings) => {
@@ -23,6 +23,16 @@ export const projectPoint = (cam: CameraSettings) => {
         ]
     } 
 };
-export const projectPoints = (cam: CameraSettings) => ((points: Vector3[]) => points.map(projectPoint(cam)));
-export const viewportToCanvas = (canvas: any) => ((point: Vector2) : Vector2 => ([point[0] * canvas.width / 2, point[1] * canvas.height / 2]));
-
+export const projectPoints = (cam: CameraSettings) => {
+	return (points: Vector3[]) => {
+		return points.map(projectPoint(cam));
+	};
+};
+export const viewportToCanvas = (canvas: any) => {
+	return (point: Vector2) : Vector2 => {
+		return [
+			point[0] * canvas.offsetWidth / 2, 
+			point[1] * canvas.offsetHeight / 2
+		];
+	};
+};
