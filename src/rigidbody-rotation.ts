@@ -44,17 +44,52 @@ interface RigidbodyRotationState {
     angularVelocity: Vector3
 };
 
+const calculateAngularAcceleration = (angularVelocity: Vector3, inertiaTensor: Vector3): Vector3 => {
+	// return [
+	// 	(angularVelocity[1] * angularVelocity[2] * (inertiaTensor[1] - inertiaTensor[2])) / inertiaTensor[0],
+	// 	(angularVelocity[2] * angularVelocity[0] * (inertiaTensor[2] - inertiaTensor[0])) / inertiaTensor[1],
+	// 	(angularVelocity[0] * angularVelocity[1] * (inertiaTensor[0] - inertiaTensor[1])) / inertiaTensor[2],
+	// ] as Vector3;
+	return Vec3.multiply(
+		multiplyVectorByDiagonalMatrix(
+			getDiagonalMatrixInverse(inertiaTensor),
+			Vec3.cross(angularVelocity, multiplyVectorByDiagonalMatrix(inertiaTensor, angularVelocity))
+		), 
+		-1
+	) 
+};
+
+
+const multiplyVectorByDiagonalMatrix = (matrix: Vector3, vector: Vector3): Vector3 => [
+	matrix[0] * vector[0],
+	matrix[1] * vector[1],
+	matrix[2] * vector[2]
+];
+const getDiagonalMatrixInverse = (matrix: Vector3): Vector3 => matrix.map(num => 1 / num) as Vector3;
+
+const calculateAngularJerk = (angularVelocity: Vector3, angularAcceleration: Vector3, inertiaTensor: Vector3): Vector3 => {
+	return Vec3.multiply(
+		multiplyVectorByDiagonalMatrix(
+			getDiagonalMatrixInverse(inertiaTensor),
+			Vec3.add(
+				Vec3.cross(angularAcceleration, multiplyVectorByDiagonalMatrix(inertiaTensor, angularVelocity)),
+				Vec3.cross(angularVelocity, multiplyVectorByDiagonalMatrix(inertiaTensor, angularAcceleration))
+			)
+		),
+		-1
+	);
+};
 export const simulate = (state: RigidbodyRotationState, inertiaTensor: Vector3, deltaTime: number) : RigidbodyRotationState => {
     //inertia-tensor and angular-velocity are relative to the orientation
     const { angularVelocity, orientation } = state;
     const rotatedFrame = rotationMatrix(Vec3.multiply(angularVelocity, deltaTime));
     const nextOrientation = multiplyMatrix(orientation, rotatedFrame);
-    const angularAcceleration : Vector3 = [
-        (angularVelocity[1] * angularVelocity[2] * (inertiaTensor[1] - inertiaTensor[2])) / inertiaTensor[0],
-        (angularVelocity[2] * angularVelocity[0] * (inertiaTensor[2] - inertiaTensor[0])) / inertiaTensor[1],
-        (angularVelocity[0] * angularVelocity[1] * (inertiaTensor[0] - inertiaTensor[1])) / inertiaTensor[2],
-    ];
-    const angularVelocityDelta = Vec3.multiply(angularAcceleration, deltaTime);
+    const angularAcceleration : Vector3 = calculateAngularAcceleration(angularVelocity, inertiaTensor);
+	const angularJerk: Vector3 = calculateAngularJerk(angularVelocity, angularAcceleration, inertiaTensor);
+    const angularVelocityDelta = Vec3.add(
+		Vec3.multiply(angularAcceleration, deltaTime),
+		Vec3.multiply(angularJerk, 0.5 * deltaTime**2)
+	);
     const nextAngularVelocity = Vec3.add(angularVelocity, angularVelocityDelta)
 
     return {
