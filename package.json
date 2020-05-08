@@ -13,6 +13,6 @@
   "dependencies": {},
   "devDependencies": {
     "cssnano": "^4.1.10",
-    "typescript": "^3.6.4"
+    "typescript": "^3.8.3"
   }
 }
