@@ -4,6 +4,16 @@ import { rotation as rotationMatrix, multiplyMatrix } from './mat3x3';
 import * as Vec3 from './vec3';
 
 
+const calculateSquareIntegral = (c1: number, c2: number) => {
+	return (c2**3 - c1**3) / 3;
+};
+const calculateLineIntegral = (c1: number, c2: number) => {
+	return (c2**2 - c1**2) / 2;
+};
+const calculateProductIntegral = (p1: number, p2: number, q1: number, q2: number) => {
+	return calculateLineIntegral(p1, p2) * calculateLineIntegral(q1, q2) / 4;
+};
+
 
 export const calculateOffsetCuboidSymmetricInertia = (startCorner: Vector3, size: Vector3) : Vector3 => {
     const xInt = ((startCorner[0] + size[0])**3 - startCorner[0]**3) * (size[1] * size[2]);
@@ -12,6 +22,28 @@ export const calculateOffsetCuboidSymmetricInertia = (startCorner: Vector3, size
     return Vec3.multiply([yInt + zInt, zInt + xInt, xInt + yInt], 1 / 3);
 };
 
+export const calculateOffsetCuboidInertiaTensor = (startCorner: Vector3, size: Vector3): Matrix3 => {
+	const x1 = startCorner[0];
+	const x2 = startCorner[0] + size[0];
+	const y1 = startCorner[1];
+	const y2 = startCorner[1] + size[1];
+	const z1 = startCorner[2];
+	const z2 = startCorner[2] + size[2];
+
+	const xSquaredInt = size[1] * size[2] * calculateSquareIntegral(x1, x2);
+	const ySquaredInt = size[2] * size[0] * calculateSquareIntegral(y1, y2);
+	const zSquaredInt = size[0] * size[1] * calculateSquareIntegral(z1, z2);
+
+	const xyInt = -1 * calculateProductIntegral(x1, x2, y1, y2);
+	const xzInt = -1 * calculateProductIntegral(x1, x2, z1, z2);
+	const yzInt = -1 * calculateProductIntegral(y1, y2, z1, z2);
+
+	return [
+		ySquaredInt + zSquaredInt, xyInt, xzInt,
+		xyInt, xSquaredInt + zSquaredInt, yzInt,
+		xzInt, yzInt, xSquaredInt + ySquaredInt,
+	];
+};
 
 
 
@@ -20,7 +52,15 @@ interface Particle {
     mass: number
 }
 
-const addInertiaTensors = (a: Matrix3, b: Matrix3): Matrix3 => a.map((val1, index) => val1 + b[index]) as Matrix3;
+export const addInertiaTensors = (tensors: Matrix3[]): Matrix3 => {
+	const sum: Matrix3 = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+	for (const tensor of tensors){
+		for (let i = 0; i < 9; i++){
+			sum[i] += tensor[i];
+		}
+	}
+	return sum;
+};
 const scaleInetiaTensor = (tensor: Matrix3, scale: number) => tensor.map(val => val * scale);
 const calculateInertiaTensorOfParticle = (particle: Particle) : Matrix3 => {
     const { position } = particle;

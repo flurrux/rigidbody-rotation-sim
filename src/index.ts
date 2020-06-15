@@ -9,6 +9,7 @@ import { Matrix3, Vector2, Vector3 } from './types';
 import { createArray, randomUnitVector } from './util';
 import * as Vec2 from './vec2';
 import * as Vec3 from './vec3';
+import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTensor, createLShapeFacesAndInertiaTensor } from './L-shape';
 
 const canvas = document.body.querySelector("canvas");
 const ctx = canvas.getContext("2d");
@@ -61,12 +62,22 @@ const camera : {transform: Transform, settings: CameraSettings} = {
 
 
 const tHandleSize = createCenteredTHandle(0.9, 0.58, 0.19);
+const faces = createTHandleFaces(tHandleSize);
+const inertiaTensor = calculateTHandleInertiaTensor(tHandleSize);
+
+
+// const LShapeSize = { length: 1.4, height: 0.4, width: 0.4 };
+// const LShape = createLShapeFacesAndInertiaTensor(LShapeSize);
+// const faces = LShape.faces;
+// const inertiaTensor = LShape.inertiaTensor;
+
+
 const renderObject: {transform: Transform, faces: FaceObject[]} = {
     transform: {
         orientation: [1, 0, 0, 0, 1, 0, 0, 0, 1],
         position: [0, 0, 0],
     },
-	faces: createTHandleFaces(tHandleSize)
+	faces
 };
 
 const starAngleSpan = 1;
@@ -89,9 +100,11 @@ const stars : { strength: number, position: Vector3 }[] = createArray(1000).map(
 
 
 //rotation simulation ###
-let rigidbodyState: { angularVelocity: Vector3, orientation: Matrix3 };
-const inertiaTensor = calculateTHandleInertiaTensor(tHandleSize);
-rigidbodyState = {
+interface RigidbodyState {
+	angularVelocity: Vector3,
+	orientation: Matrix3
+};
+const rigidbodyState: RigidbodyState = {
 	angularVelocity: Vec3.multiply(randomUnitVector(), 1),
 	orientation: [
 		0.879614796247949, 0.1049866657888861, -0.4639564744975621, 

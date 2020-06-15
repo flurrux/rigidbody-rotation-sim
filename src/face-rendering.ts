@@ -1,6 +1,6 @@
-import { Vector2, Vector3 } from './types';
+import { Vector2, Vector3, Matrix3 } from './types';
 import * as Vec3 from './vec3';
-import { Transform, transformPoint } from './transform';
+import { Transform, transformPoint, transformTransform } from './transform';
 import { CameraSettings, projectPoints } from './render';
 
 export interface FaceObject {
@@ -18,6 +18,23 @@ const globalFacePolygon = (face: FaceObject): Vector3[] => face.polygon.map(vec2
 export const projectFaces = (faces: FaceObject[], cam: CameraSettings) : Vector2[][] => {
     return faces.filter(isFaceFacingCam(cam)).map(globalFacePolygon).map(projectPoints(cam));
 };
+export const translateFaces = (faces: FaceObject[], translation: Vector3): FaceObject[] => {
+	return faces.map(face => ({
+		...face,
+		transform: {
+			...face.transform,
+			position: Vec3.add(face.transform.position, translation)
+		}
+	}))
+};
+
+export const transformFaces = (faces: FaceObject[], transform: Transform): FaceObject[] => {
+	return faces.map(face => ({
+		...face,
+		transform: transformTransform(transform)(face.transform)
+	}))
+};
+
 export const createQuadPolygon = (halfWidth: number, halfHeight: number): Vector2[] => {
     return [
         [halfWidth, halfHeight],
