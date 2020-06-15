@@ -1,9 +1,9 @@
-import { Vector3, Vector2, Matrix3 } from "./types";
-import { Transform, transformPoint, transformDirection } from "./transform";
-import { inverse as inverseMatrix, multiplyVector, inverse, rotation, multiplyMatrix } from './mat3x3';
+import { Vector3, Vector2, Matrix3 } from "../lib/types";
+import { Transform, transformPoint, transformDirection } from "../lib/transform";
+import { inverse as inverseMatrix, multiplyVector, inverse, rotation, multiplyMatrix } from '../lib/mat3x3';
 import { CameraSettings } from "./render";
-import * as Vec3 from './vec3';
-import * as Vec2 from './vec2';
+import * as Vec3 from '../lib/vec3';
+import * as Vec2 from '../lib/vec2';
 import { FaceObject } from "./face-rendering";
 
 export interface Ray {

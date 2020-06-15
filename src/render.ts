@@ -1,4 +1,4 @@
-import { Vector3, Vector2 } from './types';
+import { Vector3, Vector2 } from '../lib/types';
 
 //projection ###
 

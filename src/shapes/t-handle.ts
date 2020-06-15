@@ -1,7 +1,7 @@
-import { Vector3 } from './types';
-import * as Vec3 from './vec3';
-import { FaceObject } from './face-rendering';
-import { calculateOffsetCuboidSymmetricInertia } from './rigidbody-rotation';
+import { Vector3 } from '../../lib/types';
+import * as Vec3 from '../../lib/vec3';
+import { FaceObject } from '../face-rendering';
+import { calculateOffsetCuboidSymmetricInertia } from '../rigidbody-rotation';
 
 interface THandleShape {
     halfWidth: number, 

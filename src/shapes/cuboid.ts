@@ -1,6 +1,6 @@
-import { Vector3 } from './types';
-import * as Vec3 from './vec3';
-import { FaceObject, createQuadPolygon } from './face-rendering';
+import { Vector3 } from '../../lib/types';
+import * as Vec3 from '../../lib/vec3';
+import { FaceObject, createQuadPolygon } from '../face-rendering';
 
 export const createCuboidFaces = (size: Vector3) : FaceObject[] => {
     const halfSize = Vec3.divide(size, 2);

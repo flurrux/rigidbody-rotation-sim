@@ -1,15 +1,15 @@
 import { FaceObject, pathPolygon, projectFaces } from './face-rendering';
-import { inverse, multiplyVector } from './mat3x3';
+import { inverse, multiplyVector } from '../lib/mat3x3';
 import { CameraSettings, createCamSettingsFromCanvas, projectPoint, viewportToCanvas } from './render';
 import { simulate } from './rigidbody-rotation';
-import { calculateTHandleInertiaTensor, createCenteredTHandle, createTHandleFaces } from './t-handle';
-import { getRayFacesIntersection, handlePointerDown, handlePointerDrag, handlePointerUp, Ray, screenPointToWorldRay } from './t-handle-interaction';
-import { inverseTransformPoint, inverseTransformTransform, Transform, transformPoint, transformTransform } from './transform';
-import { Matrix3, Vector2, Vector3 } from './types';
+import { calculateTHandleInertiaTensor, createCenteredTHandle, createTHandleFaces } from './shapes/t-handle';
+import { getRayFacesIntersection, handlePointerDown, handlePointerDrag, handlePointerUp, Ray, screenPointToWorldRay } from './rigidbody-interaction';
+import { inverseTransformPoint, inverseTransformTransform, Transform, transformPoint, transformTransform } from '../lib/transform';
+import { Matrix3, Vector2, Vector3 } from '../lib/types';
 import { createArray, randomUnitVector } from './util';
-import * as Vec2 from './vec2';
-import * as Vec3 from './vec3';
-import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTensor, createLShapeFacesAndInertiaTensor } from './L-shape';
+import * as Vec2 from '../lib/vec2';
+import * as Vec3 from '../lib/vec3';
+import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTensor, createLShapeFacesAndInertiaTensor } from './shapes/L-shape';
 
 const canvas = document.body.querySelector("canvas");
 const ctx = canvas.getContext("2d");
@@ -104,7 +104,7 @@ interface RigidbodyState {
 	angularVelocity: Vector3,
 	orientation: Matrix3
 };
-const rigidbodyState: RigidbodyState = {
+let rigidbodyState: RigidbodyState = {
 	angularVelocity: Vec3.multiply(randomUnitVector(), 1),
 	orientation: [
 		0.879614796247949, 0.1049866657888861, -0.4639564744975621, 

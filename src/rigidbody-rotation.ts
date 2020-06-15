@@ -1,7 +1,7 @@
 
-import { Matrix3, Vector3 } from './types';
-import { rotation as rotationMatrix, multiplyMatrix } from './mat3x3';
-import * as Vec3 from './vec3';
+import { Matrix3, Vector3 } from '../lib/types';
+import { rotation as rotationMatrix, multiplyMatrix } from '../lib/mat3x3';
+import * as Vec3 from '../lib/vec3';
 
 
 const calculateSquareIntegral = (c1: number, c2: number) => {
@@ -77,7 +77,7 @@ const calculateInertiaTensorOfParticle = (particle: Particle) : Matrix3 => {
     ] as Matrix3;
     return scaleInetiaTensor(tensor, particle.mass) as Matrix3;
 };
-const calculateInertiaTensorOfparticles = (particles: Particle[]) : Matrix3 => particles.reduce((tensor: Matrix3, particle) => addInertiaTensors(tensor, calculateInertiaTensorOfParticle(particle)), [0, 0, 0, 0, 0, 0, 0, 0, 0]);
+const calculateInertiaTensorOfparticles = (particles: Particle[]) : Matrix3 => particles.reduce((tensor: Matrix3, particle) => addInertiaTensors([tensor, calculateInertiaTensorOfParticle(particle)]), [0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
 interface RigidbodyRotationState {
     orientation: Matrix3,

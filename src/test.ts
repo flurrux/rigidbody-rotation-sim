@@ -1,5 +1,5 @@
-import { Vector2 } from "./types";
-import { isPointInPolygon } from "./t-handle-interaction";
+import { Vector2 } from "../lib/types";
+import { isPointInPolygon } from "./rigidbody-interaction";
 
 const canvas = document.body.querySelector("canvas");
 Object.assign(canvas, { width: window.innerWidth, height: window.innerHeight });

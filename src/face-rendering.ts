@@ -1,6 +1,6 @@
-import { Vector2, Vector3, Matrix3 } from './types';
-import * as Vec3 from './vec3';
-import { Transform, transformPoint, transformTransform } from './transform';
+import { Vector2, Vector3, Matrix3 } from '../lib/types';
+import * as Vec3 from '../lib/vec3';
+import { Transform, transformPoint, transformTransform } from '../lib/transform';
 import { CameraSettings, projectPoints } from './render';
 
 export interface FaceObject {

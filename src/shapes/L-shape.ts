@@ -1,7 +1,7 @@
-import { Vector3, Matrix3 } from './types';
-import * as Vec3 from './vec3';
-import { FaceObject, translateFaces, transformFaces } from './face-rendering';
-import { calculateOffsetCuboidSymmetricInertia, calculateOffsetCuboidInertiaTensor, addInertiaTensors } from './rigidbody-rotation';
+import { Vector3, Matrix3 } from '../../lib/types';
+import * as Vec3 from '../../lib/vec3';
+import { FaceObject, translateFaces, transformFaces } from '../face-rendering';
+import { calculateOffsetCuboidSymmetricInertia, calculateOffsetCuboidInertiaTensor, addInertiaTensors } from '../rigidbody-rotation';
 
 interface LShape {
 	length: number,
@@ -139,7 +139,7 @@ export const createLShapeFacesAndInertiaTensor = (shapeData: LShape): { faces: F
 	return {
 		faces: transformFaces(centeredFaces, { position: [0, 0, 0], orientation: rotationAndInertia.rotation }),
 		inertiaTensor: rotationAndInertia.inertiaTensor
-	};
+	}; 
 };
 
 export const calculateLShapeInertiaTensor = (shapeData: LShape) : Matrix3 => {
