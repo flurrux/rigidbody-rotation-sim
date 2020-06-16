@@ -163,28 +163,18 @@ export const calculateLShapeInertiaTensor = (shapeData: LShape) : Matrix3 => {
 
 export const calculateLShapeMassCenter = (shapeData: LShape) : Vector3 => {
 	const { width, height, length } = shapeData;
+	
 	const joinVolume = width * height**2;
 	const armVolume = (length * width * height) - joinVolume;
 	const totalVolume = 2 * armVolume + joinVolume;
 	const joinRelVolume = joinVolume / totalVolume;
 	const armRelVolume = armVolume / totalVolume;
-	const joinMassCenter = [
-		joinRelVolume * (height / 2),
-		joinRelVolume * (height / 2), 0
-	];
-	const arm1MassCenter = [
-		armRelVolume * (length - height) / 2, 
-		armRelVolume * (height / 2), 0
-	];
-	const arm2MassCenter = [
-		armRelVolume * (height / 2), 
-		armRelVolume * (length - height) / 2, 0
-	];
-	return [
-		joinMassCenter[0] + arm1MassCenter[0] + arm2MassCenter[0],
-		joinMassCenter[1] + arm1MassCenter[1] + arm2MassCenter[1],
-		0
-	];
+
+	let massCenter: Vector3 = [0, 0, 0];
+	massCenter = Vec3.add(massCenter, Vec3.multiply([height / 2, height / 2, 0], joinRelVolume));
+	massCenter = Vec3.add(massCenter, Vec3.multiply([(length + height) / 2, height / 2, 0], armRelVolume));
+	massCenter = Vec3.add(massCenter, Vec3.multiply([height / 2, (length + height) / 2, 0], armRelVolume));
+	return massCenter;
 };
 
 export const calculateLShapeRotationAndInertiaTensor = (shapeData: LShape): { rotation: Matrix3, inertiaTensor: Vector3 } => {

@@ -62,14 +62,14 @@ const camera : {transform: Transform, settings: CameraSettings} = {
 };
 
 
-const tHandleSize = createCenteredTHandle(0.9, 0.58, 0.19);
-const faces = createTHandleFaces(tHandleSize);
-const inertiaTensor = calculateTHandleInertiaTensor(tHandleSize);
+// const tHandleSize = createCenteredTHandle(0.9, 0.58, 0.19);
+// const faces = createTHandleFaces(tHandleSize);
+// const inertiaTensor = calculateTHandleInertiaTensor(tHandleSize);
 
-// const LShapeSize = { length: 1.4, height: 0.4, width: 0.4 };
-// const LShape = createLShapeFacesAndInertiaTensor(LShapeSize);
-// const faces = LShape.faces;
-// const inertiaTensor = LShape.inertiaTensor;
+const LShapeSize = { length: 1.5, height: 0.3, width: 0.3 };
+const LShape = createLShapeFacesAndInertiaTensor(LShapeSize);
+const faces = LShape.faces;
+const inertiaTensor = LShape.inertiaTensor;
 
 // const UShape = createUShape({ width: 1.8, height: 0.9, thickness: 0.35 });
 // const faces = UShape.faces;
