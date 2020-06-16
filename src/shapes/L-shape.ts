@@ -1,7 +1,7 @@
 import { Vector3, Matrix3 } from '../../lib/types';
 import * as Vec3 from '../../lib/vec3';
 import { FaceObject, translateFaces, transformFaces } from '../face-rendering';
-import { calculateOffsetCuboidSymmetricInertia, calculateOffsetCuboidInertiaTensor, addInertiaTensors } from '../rigidbody-rotation';
+import { calculateOffsetCuboidInertiaTensor, addInertiaTensors } from '../rigidbody-rotation';
 
 interface LShape {
 	length: number,

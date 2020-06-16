@@ -9,8 +9,9 @@ import { Matrix3, Vector2, Vector3 } from '../lib/types';
 import { createArray, randomUnitVector } from './util';
 import * as Vec2 from '../lib/vec2';
 import * as Vec3 from '../lib/vec3';
-import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTensor, createLShapeFacesAndInertiaTensor } from './shapes/L-shape';
-import { createFaces, createUShape } from './shapes/U-shape';
+// import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTensor, createLShapeFacesAndInertiaTensor } from './shapes/L-shape';
+// import { createFaces, createUShape } from './shapes/U-shape';
+// import { createCuboidFaces, calculateCuboidInertiaTensor } from './shapes/cuboid';
 
 const canvas = document.body.querySelector("canvas");
 const ctx = canvas.getContext("2d");
@@ -62,14 +63,18 @@ const camera : {transform: Transform, settings: CameraSettings} = {
 };
 
 
-// const tHandleSize = createCenteredTHandle(0.9, 0.58, 0.19);
-// const faces = createTHandleFaces(tHandleSize);
-// const inertiaTensor = calculateTHandleInertiaTensor(tHandleSize);
+// const cuboidSize: Vector3 = [1, 2, 0.5];
+// const faces = createCuboidFaces(cuboidSize);
+// const inertiaTensor = calculateCuboidInertiaTensor(...Vec3.multiply(cuboidSize, 0.5));
 
-const LShapeSize = { length: 1.5, height: 0.3, width: 0.3 };
-const LShape = createLShapeFacesAndInertiaTensor(LShapeSize);
-const faces = LShape.faces;
-const inertiaTensor = LShape.inertiaTensor;
+const TShapeSize = createCenteredTHandle(0.9, 0.58, 0.19);
+const faces = createTHandleFaces(TShapeSize);
+const inertiaTensor = calculateTHandleInertiaTensor(TShapeSize);
+
+// const LShapeSize = { length: 1.5, height: 0.3, width: 0.3 };
+// const LShape = createLShapeFacesAndInertiaTensor(LShapeSize);
+// const faces = LShape.faces;
+// const inertiaTensor = LShape.inertiaTensor;
 
 // const UShape = createUShape({ width: 1.8, height: 0.9, thickness: 0.35 });
 // const faces = UShape.faces;
