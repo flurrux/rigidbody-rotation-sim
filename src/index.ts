@@ -2,7 +2,7 @@ import { FaceObject, pathPolygon, projectFaces } from './face-rendering';
 import { inverse, multiplyVector } from '../lib/mat3x3';
 import { CameraSettings, createCamSettingsFromCanvas, projectPoint, viewportToCanvas } from './render';
 import { simulate } from './rigidbody-rotation';
-import { calculateTHandleInertiaTensor, createCenteredTHandle, createTHandleFaces } from './shapes/t-handle';
+import { calculateTHandleInertiaTensor, createCenteredTHandle, createTHandleFaces } from './shapes/T-shape';
 import { getRayFacesIntersection, handlePointerDown, handlePointerDrag, handlePointerUp, Ray, screenPointToWorldRay } from './rigidbody-interaction';
 import { inverseTransformPoint, inverseTransformTransform, Transform, transformPoint, transformTransform } from '../lib/transform';
 import { Matrix3, Vector2, Vector3 } from '../lib/types';
@@ -10,6 +10,7 @@ import { createArray, randomUnitVector } from './util';
 import * as Vec2 from '../lib/vec2';
 import * as Vec3 from '../lib/vec3';
 import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTensor, createLShapeFacesAndInertiaTensor } from './shapes/L-shape';
+import { createFaces, createUShape } from './shapes/U-shape';
 
 const canvas = document.body.querySelector("canvas");
 const ctx = canvas.getContext("2d");
@@ -65,11 +66,15 @@ const tHandleSize = createCenteredTHandle(0.9, 0.58, 0.19);
 const faces = createTHandleFaces(tHandleSize);
 const inertiaTensor = calculateTHandleInertiaTensor(tHandleSize);
 
-
 // const LShapeSize = { length: 1.4, height: 0.4, width: 0.4 };
 // const LShape = createLShapeFacesAndInertiaTensor(LShapeSize);
 // const faces = LShape.faces;
 // const inertiaTensor = LShape.inertiaTensor;
+
+// const UShape = createUShape({ width: 1.8, height: 0.9, thickness: 0.35 });
+// const faces = UShape.faces;
+// const inertiaTensor = UShape.inertiaTensor;
+
 
 
 const renderObject: {transform: Transform, faces: FaceObject[]} = {
@@ -105,13 +110,21 @@ interface RigidbodyState {
 	orientation: Matrix3
 };
 let rigidbodyState: RigidbodyState = {
-	angularVelocity: Vec3.multiply(randomUnitVector(), 1),
+	angularVelocity: [0, 0, 0],
 	orientation: [
-		0.879614796247949, 0.1049866657888861, -0.4639564744975621, 
-		0.010446319108088221, 0.9708419604927488, 0.23949271839392078, 
-		0.475571955269409, -0.21550797607780264, 0.8528702290548698
+		1, 0, 0,
+		0, 1, 0,
+		0, 0, 1
 	]
 };
+// let rigidbodyState: RigidbodyState = {
+// 	angularVelocity: Vec3.multiply(randomUnitVector(), 1),
+// 	orientation: [
+// 		0.879614796247949, 0.1049866657888861, -0.4639564744975621, 
+// 		0.010446319108088221, 0.9708419604927488, 0.23949271839392078, 
+// 		0.475571955269409, -0.21550797607780264, 0.8528702290548698
+// 	]
+// };
 const simulateRigidbody = (deltaTime: number) => {
 	const steps = Math.round(deltaTime / 0.002);
 	const simDeltaTime = deltaTime / steps;
