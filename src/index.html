@@ -22,15 +22,37 @@
 		.credits {
 			position: absolute;
 			bottom: 0px;
-			right: 10px;
+			left: 10px;
 			padding: 10px;
 			color: #bdbdbd87;
 			text-decoration: solid;
+		}
+		.overlay-button {
+			position: absolute;
+			width: 8vh;
+			height: 8vh;
+			font-size: 5vh;
+			margin: 1.5vh;
+			color: white;
+			background-color: transparent;
+			border-radius: 50%;
+			border: none;
+			cursor: pointer
+		}
+		#next-body-button {
+			right: 0px;
+			top: 0px;
+		}
+		#fullscreen-button {
+			right: 0px;
+			bottom: 0px;
 		}
     </style>
 </head>    
 <body>
 	<canvas></canvas>
+	<button id="next-body-button" class="overlay-button">&#8594;</button>
+	<button id="fullscreen-button" class="overlay-button">&#x26F6;</button>
 	<a class="credits" href="https://zen-bhaskara-275af2.netlify.app/">by flurrux</a>
     <script src="index.ts"></script>
 </body> 

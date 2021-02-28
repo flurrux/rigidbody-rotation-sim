@@ -1,7 +1,8 @@
 
 import { Matrix3, Vector3 } from '../lib/types';
-import { rotation as rotationMatrix, multiplyMatrix } from '../lib/mat3x3';
+import { rotation as rotationMatrix, multiplyMatrix, identity } from '../lib/mat3x3';
 import * as Vec3 from '../lib/vec3';
+import { randomUnitVector } from './util';
 
 
 const calculateSquareIntegral = (c1: number, c2: number) => {
@@ -119,7 +120,7 @@ const calculateAngularJerk = (angularVelocity: Vector3, angularAcceleration: Vec
 		-1
 	);
 };
-export const simulate = (state: RigidbodyRotationState, inertiaTensor: Vector3, deltaTime: number) : RigidbodyRotationState => {
+export function simulate<S extends RigidbodyRotationState>(state: S, inertiaTensor: Vector3, deltaTime: number) : S {
     //inertia-tensor and angular-velocity are relative to the orientation
     const { angularVelocity, orientation } = state;
     const rotatedFrame = rotationMatrix(Vec3.multiply(angularVelocity, deltaTime));
@@ -133,7 +134,15 @@ export const simulate = (state: RigidbodyRotationState, inertiaTensor: Vector3, 
     const nextAngularVelocity = Vec3.add(angularVelocity, angularVelocityDelta)
 
     return {
+		...state,
         orientation: nextOrientation,
         angularVelocity: nextAngularVelocity
     };
 };
+
+export function randomState(): RigidbodyRotationState {
+	return {
+		orientation: identity, 
+		angularVelocity: Vec3.multiply(randomUnitVector(), 1)
+	}
+}

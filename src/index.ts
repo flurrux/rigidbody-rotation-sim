@@ -1,7 +1,7 @@
 import { FaceObject, pathPolygon, projectFaces } from './face-rendering';
-import { inverse, multiplyVector } from '../lib/mat3x3';
+import { identity, inverse, multiplyVector } from '../lib/mat3x3';
 import { CameraSettings, createCamSettingsFromCanvas, projectPoint, viewportToCanvas } from './render';
-import { simulate } from './rigidbody-rotation';
+import { randomState, simulate } from './rigidbody-rotation';
 import { calculateTHandleInertiaTensor, createCenteredTHandle, createTHandleFaces } from './shapes/T-shape';
 import { getRayFacesIntersection, handlePointerDown, handlePointerDrag, handlePointerUp, Ray, screenPointToWorldRay } from './rigidbody-interaction';
 import { inverseTransformPoint, inverseTransformTransform, Transform, transformPoint, transformTransform } from '../lib/transform';
@@ -9,9 +9,12 @@ import { Matrix3, Vector2, Vector3 } from '../lib/types';
 import { createArray, randomUnitVector } from './util';
 import * as Vec2 from '../lib/vec2';
 import * as Vec3 from '../lib/vec3';
-// import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTensor, createLShapeFacesAndInertiaTensor } from './shapes/L-shape';
-// import { createFaces, createUShape } from './shapes/U-shape';
-// import { createCuboidFaces, calculateCuboidInertiaTensor } from './shapes/cuboid';
+import { setupFullscreenControl } from './fullscreen-control';
+
+import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTensor, createLShapeFacesAndInertiaTensor } from './shapes/L-shape';
+import { createUShape } from './shapes/U-shape';
+import { createCuboidFaces, calculateCuboidInertiaTensor } from './shapes/cuboid';
+
 
 const canvas = document.body.querySelector("canvas");
 const ctx = canvas.getContext("2d");
@@ -62,33 +65,84 @@ const camera : {transform: Transform, settings: CameraSettings} = {
     settings: createCamSettingsFromCanvas(-5, 0.003, canvas)
 };
 
+interface RotatingObject {
+	inertiaVector: Vector3,
+	angularVelocity: Vector3,
+	orientation: Matrix3,
+	faces: FaceObject[]
+}
 
-// const cuboidSize: Vector3 = [1, 2, 0.5];
-// const faces = createCuboidFaces(cuboidSize);
-// const inertiaTensor = calculateCuboidInertiaTensor(...Vec3.multiply(cuboidSize, 0.5));
+function createCuboidBody(size: Vector3): RotatingObject {
+	return {
+		orientation: identity,
+		angularVelocity: [0, 0, 0],
+		faces: createCuboidFaces(size), 
+		inertiaVector: calculateCuboidInertiaTensor(...Vec3.multiply(size, 0.5))
+	}
+}
+function createTBody(size: Vector3): RotatingObject {
+	const TShapeSize = createCenteredTHandle(...size);
+	return {
+		orientation: identity,
+		angularVelocity: [0, 0, 0],
+		faces: createTHandleFaces(TShapeSize),
+		inertiaVector: calculateTHandleInertiaTensor(TShapeSize)
+	}
+}
+function createLBody(size: Vector3): RotatingObject {
+	const LShapeSize = { length: size[2], height: size[1], width: size[0] };
+	const LShape = createLShapeFacesAndInertiaTensor(LShapeSize);
+	return {
+		orientation: identity,
+		angularVelocity: [0, 0, 0],
+		faces: LShape.faces,
+		inertiaVector: LShape.inertiaTensor
+	}
+}
+function createUBody(size: Vector3): RotatingObject {
+	const UShape = createUShape({ width: size[0], height: size[1], thickness: size[2] });
+	return {
+		orientation: identity,
+		angularVelocity: [0, 0, 0],
+		faces: UShape.faces,
+		inertiaVector: UShape.inertiaTensor
+	}
+}
 
-const TShapeSize = createCenteredTHandle(0.9, 0.58, 0.19);
-const faces = createTHandleFaces(TShapeSize);
-const inertiaTensor = calculateTHandleInertiaTensor(TShapeSize);
+const rigidbodyLibrary: RotatingObject[] = [
+	createTBody([0.9, 0.58, 0.19]), 
+	createCuboidBody([0.7, 1.4, 0.35]),
+	createLBody([0.3, 0.3, 1.2]),
+	createUBody([1.6, 0.9, 0.35]),
+];
 
-// const LShapeSize = { length: 1.5, height: 0.3, width: 0.3 };
-// const LShape = createLShapeFacesAndInertiaTensor(LShapeSize);
-// const faces = LShape.faces;
-// const inertiaTensor = LShape.inertiaTensor;
+let currentBodyIndex: number = 0;
 
-// const UShape = createUShape({ width: 1.8, height: 0.9, thickness: 0.35 });
-// const faces = UShape.faces;
-// const inertiaTensor = UShape.inertiaTensor;
-
-
-
-const renderObject: {transform: Transform, faces: FaceObject[]} = {
-    transform: {
-        orientation: [1, 0, 0, 0, 1, 0, 0, 0, 1],
-        position: [0, 0, 0],
-    },
-	faces
+let rotatingBody: RotatingObject = {
+	...rigidbodyLibrary[currentBodyIndex],
+	...randomState(),
 };
+
+function chooseNextBody(){
+	currentBodyIndex = (currentBodyIndex + 1) % rigidbodyLibrary.length;
+	rotatingBody = {
+		...rigidbodyLibrary[currentBodyIndex],
+		orientation: rotatingBody.orientation,
+		angularVelocity: rotatingBody.angularVelocity
+	}
+}
+document.querySelector("#next-body-button").addEventListener("click", () => {
+	chooseNextBody();
+});
+
+
+function getRotatingObjectTransform(obj: RotatingObject): Transform {
+	return {
+		position: [0, 0, 0], 
+		orientation: obj.orientation
+	}
+}
+
 
 const starAngleSpan = 1;
 const stars : { strength: number, position: Vector3 }[] = createArray(1000).map(() => {
@@ -110,31 +164,12 @@ const stars : { strength: number, position: Vector3 }[] = createArray(1000).map(
 
 
 //rotation simulation ###
-interface RigidbodyState {
-	angularVelocity: Vector3,
-	orientation: Matrix3
-};
-let rigidbodyState: RigidbodyState = {
-	angularVelocity: [0, 0, 0],
-	orientation: [
-		1, 0, 0,
-		0, 1, 0,
-		0, 0, 1
-	]
-};
-// let rigidbodyState: RigidbodyState = {
-// 	angularVelocity: Vec3.multiply(randomUnitVector(), 1),
-// 	orientation: [
-// 		0.879614796247949, 0.1049866657888861, -0.4639564744975621, 
-// 		0.010446319108088221, 0.9708419604927488, 0.23949271839392078, 
-// 		0.475571955269409, -0.21550797607780264, 0.8528702290548698
-// 	]
-// };
+
 const simulateRigidbody = (deltaTime: number) => {
-	const steps = Math.round(deltaTime / 0.002);
+	const steps = Math.max(1, Math.round(deltaTime / 0.002));
 	const simDeltaTime = deltaTime / steps;
 	for (let i = 0; i < steps; i++) {
-		rigidbodyState = simulate(rigidbodyState, inertiaTensor, simDeltaTime);
+		rotatingBody = simulate(rotatingBody, rotatingBody.inertiaVector, simDeltaTime);
 	}
 };
 
@@ -157,19 +192,21 @@ let updateIntersection: (() => void) = null;
 	};
 	updateIntersection = () => {
 		if (!curPointer) return;
+		const faces = rotatingBody.faces;
+		const transform = getRotatingObjectTransform(rotatingBody);
 		curRay = screenPointToWorldRay(curPointer, canvas, camera.transform, camera.settings);
-		curIntersection = getRayFacesIntersection(renderObject.transform, renderObject.faces, curRay);
+		curIntersection = getRayFacesIntersection(transform, faces, curRay);
 		if (curIntersection) {
-			intersectionTransform = transformTransform(renderObject.transform)(curIntersection.intersectionTransform);
+			intersectionTransform = transformTransform(transform)(curIntersection.intersectionTransform);
 		}
 		else {
 			intersectionTransform = null;
 		}
 	};
 	const updatePointerDrag = (deltaTime: number) => {
-		const result = handlePointerDrag(curRay, rigidbodyState.orientation, curState, deltaTime);
+		const result = handlePointerDrag(curRay, rotatingBody.orientation, curState, deltaTime);
 		curState = result.state;
-		rigidbodyState.orientation = result.transform;
+		rotatingBody.orientation = result.transform;
 	};
 	updateInteraction = (deltaTime: number) => {
 		if (isDragging) {
@@ -183,9 +220,9 @@ let updateIntersection: (() => void) = null;
 	canvas.addEventListener("pointerdown", e => {
 		updateIntersectionByEvent(e);
 		if (!curIntersection) return;
-		rigidbodyState.angularVelocity = [0, 0, 0];
+		rotatingBody.angularVelocity = [0, 0, 0];
 		isDragging = true;
-		curState = handlePointerDown(curIntersection, rigidbodyState.orientation);
+		curState = handlePointerDown(curIntersection, rotatingBody.orientation);
 	});
 	document.addEventListener("pointerup", e => {
 		if (!isDragging) return;
@@ -195,7 +232,7 @@ let updateIntersection: (() => void) = null;
 		}
 		isDragging = false;
 		const angularVelocity = handlePointerUp(curState);
-		rigidbodyState.angularVelocity = multiplyVector(inverse(rigidbodyState.orientation), angularVelocity);
+		rotatingBody.angularVelocity = multiplyVector(inverse(rotatingBody.orientation), angularVelocity);
 		curState = null;
 	});
 }
@@ -249,9 +286,12 @@ const renderStars = (toCanvas: Function, project: Function) => {
 };
 
 const renderRenderObject = (toCanvas: (p: Vector2) => Vector2) => {
-    const localObjTransform = inverseTransformTransform(camera.transform)(renderObject.transform);
+	const faces = rotatingBody.faces;
+	const transform = getRotatingObjectTransform(rotatingBody);
+
+    const localObjTransform = inverseTransformTransform(camera.transform)(transform);
     const transformToLocalObj = transformTransform(localObjTransform);
-    const localFaces = renderObject.faces.map(face => {
+    const localFaces = faces.map(face => {
         return { ...face, transform: transformToLocalObj(face.transform) }
     });
     const renderableFaces = projectFaces(localFaces, camera.settings).map(face => face.map(toCanvas));
@@ -288,7 +328,6 @@ const render = () => {
 
     renderStars(toCanvas, project);
 
-	renderObject.transform.orientation = rigidbodyState.orientation;
 	renderRenderObject(toCanvas);
 
 	renderMouseIntersectionPoint(project, toCanvas);
@@ -314,6 +353,7 @@ const startLoop = () => {
 
 const main = () => {
     onresize();
-    startLoop();
+	startLoop();
+	setupFullscreenControl("#fullscreen-button");
 };
 main();
