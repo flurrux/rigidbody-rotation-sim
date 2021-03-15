@@ -1,4 +1,4 @@
-import { FaceObject, pathPolygon, projectFaces } from './face-rendering';
+import { FaceObject, filterFaces, pathPolygon, projectFace, projectFaces } from './face-rendering';
 import { identity, inverse, multiplyVector } from '../lib/mat3x3';
 import { CameraSettings, createCamSettingsFromCanvas, projectPoint, viewportToCanvas } from './render';
 import { randomState, simulate } from './rigidbody-rotation';
@@ -14,6 +14,7 @@ import { setupFullscreenControl } from './fullscreen-control';
 import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTensor, createLShapeFacesAndInertiaTensor } from './shapes/L-shape';
 import { createUShape } from './shapes/U-shape';
 import { createCuboidFaces, calculateCuboidInertiaTensor } from './shapes/cuboid';
+import { createCrossShapeFaces } from './shapes/ortho-shape';
 
 
 const canvas = document.body.querySelector("canvas");
@@ -108,19 +109,28 @@ function createUBody(size: Vector3): RotatingObject {
 		inertiaVector: UShape.inertiaTensor
 	}
 }
+function createCrossBody(coreSize: number, extrudeSize: Vector3): RotatingObject {
+	return {
+		orientation: identity,
+		angularVelocity: [0, 0, 0],
+		faces: createCrossShapeFaces({ coreSize, extrudeSize }),
+		inertiaVector: [1, 1, 1]
+	}
+}
 
 const rigidbodyLibrary: RotatingObject[] = [
 	createTBody([0.9, 0.58, 0.19]), 
 	createCuboidBody([0.7, 1.4, 0.35]),
 	createLBody([0.3, 0.3, 1.2]),
 	createUBody([1.6, 0.9, 0.35]),
+	// createCrossBody(0.3, [0.2, 1, 0.4])
 ];
 
 let currentBodyIndex: number = 0;
 
 let rotatingBody: RotatingObject = {
 	...rigidbodyLibrary[currentBodyIndex],
-	...randomState(),
+	// ...randomState(),
 };
 
 function chooseNextBody(){
@@ -175,7 +185,7 @@ const simulateRigidbody = (deltaTime: number) => {
 
 
 
-//interaction test ###
+//interaction ###
 let intersectionTransform: Transform = null;
 let updateInteraction: ((deltaTime: number) => void) = null; 
 let updateIntersection: (() => void) = null;
@@ -293,16 +303,17 @@ const renderRenderObject = (toCanvas: (p: Vector2) => Vector2) => {
     const transformToLocalObj = transformTransform(localObjTransform);
     const localFaces = faces.map(face => {
         return { ...face, transform: transformToLocalObj(face.transform) }
-    });
-    const renderableFaces = projectFaces(localFaces, camera.settings).map(face => face.map(toCanvas));
+	});
+	const filteredFaces = filterFaces(localFaces, camera.settings);
 
-    for (const face of renderableFaces){
-        
-        pathPolygon(ctx, face);
+	for (const face of filteredFaces){
+		
+		const polygon = projectFace(face, camera.settings).map(toCanvas);
+		pathPolygon(ctx, polygon);
         ctx.fillStyle = backgroundColor;
         ctx.fill();
 
-        pathPolygon(ctx, face);
+		pathPolygon(ctx, polygon);
         Object.assign(ctx, {
             lineWidth: 2,
             lineJoin: "round",

@@ -45,7 +45,8 @@ export const screenPointToWorldRay = (
 };
 export interface IntersectionData {
 	intersectionTransform: Transform,
-	distance: number
+	distance: number, 
+	faceIndex: number
 };
 export const calculateLocalRayPlaneIntersection = (planeTransform: Transform, globalRay: Ray): 
 	{ point: Vector3, distance: number } => {
@@ -95,7 +96,9 @@ export const getRayFacesIntersection = (transform: Transform, faces: FaceObject[
 	let curPoint: Vector3 = null;
 	let curDistance: number = 0;
 	let curFace: FaceObject = null;
-	for (const face of faces){
+	let curIndex = 0;
+	for (let i = 0; i < faces.length; i++){
+		const face = faces[i];
 		const planeIntersection = calculateLocalRayPlaneIntersection(face.transform, localRay);
 		const planePoint: Vector2 = [
 			planeIntersection.point[0],
@@ -106,11 +109,13 @@ export const getRayFacesIntersection = (transform: Transform, faces: FaceObject[
 			curPoint = planeIntersection.point;
 			curDistance = planeIntersection.distance;
 			curFace = face;
+			curIndex = i;
 		}
 	}
 	if (!curPoint) return null;
 	return {
 		distance: curDistance,
+		faceIndex: curIndex,
 		intersectionTransform: {
 			position: transformPoint(curFace.transform)(curPoint),
 			orientation: curFace.transform.orientation

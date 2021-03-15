@@ -15,8 +15,14 @@ export const isFaceFacingCam = (cam: CameraSettings) => ((face: FaceObject) : bo
 
 const vec2ToVec3 = (vec2: Vector2) : Vector3 => [vec2[0], vec2[1], 0];
 const globalFacePolygon = (face: FaceObject): Vector3[] => face.polygon.map(vec2ToVec3).map(transformPoint(face.transform));
+export const filterFaces = (faces: FaceObject[], cam: CameraSettings): FaceObject[] => {
+	return faces.filter(isFaceFacingCam(cam))
+};
+export const projectFace = (face: FaceObject, cam: CameraSettings): Vector2[] => {
+	return projectPoints(cam)(globalFacePolygon(face));
+};
 export const projectFaces = (faces: FaceObject[], cam: CameraSettings) : Vector2[][] => {
-    return faces.filter(isFaceFacingCam(cam)).map(globalFacePolygon).map(projectPoints(cam));
+    return faces.map(globalFacePolygon).map(projectPoints(cam));
 };
 export const translateFaces = (faces: FaceObject[], translation: Vector3): FaceObject[] => {
 	return faces.map(face => ({
