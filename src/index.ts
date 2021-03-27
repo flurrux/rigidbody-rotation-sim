@@ -15,6 +15,7 @@ import { createLShapeFaces, createCenteredLShapeFaces, calculateLShapeInertiaTen
 import { createUShape } from './shapes/U-shape';
 import { createCuboidFaces, calculateCuboidInertiaTensor } from './shapes/cuboid';
 import { createCrossShapeFaces } from './shapes/ortho-shape';
+import { createIcosahedronFaces } from './shapes/icosahedron';
 
 
 const canvas = document.body.querySelector("canvas");
@@ -117,8 +118,17 @@ function createCrossBody(coreSize: number, extrudeSize: Vector3): RotatingObject
 		inertiaVector: [1, 1, 1]
 	}
 }
+function createIcosahedronBody(edgeSize: number): RotatingObject {
+	return {
+		faces: createIcosahedronFaces(edgeSize), 
+		inertiaVector: [1, 1, 1], 
+		angularVelocity: [0, 0, 0], 
+		orientation: identity
+	}
+}
 
 const rigidbodyLibrary: RotatingObject[] = [
+	createIcosahedronBody(1),
 	createTBody([0.9, 0.58, 0.19]), 
 	createCuboidBody([0.7, 1.4, 0.35]),
 	createLBody([0.3, 0.3, 1.2]),
