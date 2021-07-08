@@ -128,11 +128,11 @@ function createIcosahedronBody(edgeSize: number): RotatingObject {
 }
 
 const rigidbodyLibrary: RotatingObject[] = [
-	createIcosahedronBody(1),
 	createTBody([0.9, 0.58, 0.19]), 
 	createCuboidBody([0.7, 1.4, 0.35]),
 	createLBody([0.3, 0.3, 1.2]),
 	createUBody([1.6, 0.9, 0.35]),
+	createIcosahedronBody(1),
 	// createCrossBody(0.3, [0.2, 1, 0.4])
 ];
 
@@ -140,7 +140,7 @@ let currentBodyIndex: number = 0;
 
 let rotatingBody: RotatingObject = {
 	...rigidbodyLibrary[currentBodyIndex],
-	// ...randomState(),
+	...randomState(),
 };
 
 function chooseNextBody(){
