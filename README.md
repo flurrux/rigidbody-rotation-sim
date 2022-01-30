@@ -1,8 +1,8 @@
 # rigidbody-rotation-sim
 
 small simulation of a rotating rigid body.  
-made with typescript and canvas only.  
+made with typescript and [Canvas2D](https://developer.mozilla.org/de/docs/Web/API/CanvasRenderingContext2D) only.  
 
 interactive: https://rigidbodyrotation.netlify.app
 
-![demo gif](https://github.com/flurrux/rigidbody-rotation-sim/blob/master/demo-gif-2.gif)
+<img src="./demo/demo-gif-3.gif" style="max-height: 300px;" />
