@@ -3,16 +3,14 @@
   "version": "1.0.0",
   "description": "rigidbody-rotation is best rotation",
   "scripts": {
-	"test": "echo \"Error: no test specified\" && exit 1",
-	"start": "parcel src/index.html",
-    "build": "parcel build src/index.html",
-    "prepublish": "npm run build"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:bundle-code": "esbuild src/index.ts --bundle --minify --outfile=dist/index.js",
+    "build:copy-html": "copy src\\index.html dist\\index.html",
+    "build": "npm run build:bundle-code && npm run build:copy-html"
   },
   "author": "Christian Hoffmann <christianhoffmann@outlook.com>",
   "license": "ISC",
-  "dependencies": {},
   "devDependencies": {
-    "cssnano": "^4.1.10",
-    "typescript": "^3.8.3"
+    "esbuild": "0.28.0"
   }
 }
