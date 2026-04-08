@@ -4,8 +4,8 @@
   "description": "rigidbody-rotation is best rotation",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:bundle-code": "esbuild src/index.ts --bundle --minify --outfile=dist/index.js",
-    "build:copy-html": "copy src\\index.html dist\\index.html",
+    "build:bundle-code": "esbuild src/index.ts --bundle --minify --outfile=docs/index.js",
+    "build:copy-html": "copy src\\index.html docs\\index.html",
     "build": "npm run build:bundle-code && npm run build:copy-html"
   },
   "author": "Christian Hoffmann <christianhoffmann@outlook.com>",
